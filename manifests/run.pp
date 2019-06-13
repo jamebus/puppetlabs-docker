@@ -382,24 +382,22 @@ define docker::run(
     }
 
     if $ensure == 'absent' {
-      if $::osfamily == 'windows'{
-        exec {
-          "stop container ${service_prefix}${sanitised_title}":
-          command     => "${docker_command} stop --time=${stop_wait_time} ${sanitised_title}",
-          onlyif      => "${docker_command} inspect ${sanitised_title}",
-          environment => $exec_environment,
-          path        => $exec_path,
-          provider    => $exec_provider,
-          timeout     => $exec_timeout,
-          notify      => Exec["remove container ${service_prefix}${sanitised_title}"]
-        }
+      exec {
+        "stop container ${service_prefix}${sanitised_title}":
+        command     => "${docker_command} stop --time=${stop_wait_time} ${sanitised_title}",
+        onlyif      => "${docker_command} inspect ${sanitised_title}",
+        environment => $exec_environment,
+        path        => $exec_path,
+        provider    => $exec_provider,
+        timeout     => $exec_timeout,
+        notify      => Exec["remove container ${service_prefix}${sanitised_title}"]
       }
-      else {
+      if $::osfamily != 'windows' {
         service { "${service_prefix}${sanitised_title}":
           ensure    => false,
           enable    => false,
           hasstatus => $hasstatus,
-          provider  => $service_provider_real,
+          provider  => $service_provider_real
         }
       }
       exec {
